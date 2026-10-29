@@ -61,7 +61,7 @@ public class Producto {
     private BigDecimal precioAnterior;
 
     @NotBlank(message = "La duración de la partida no puede estar vacía")
-    @Column(name = "duracion_partida")
+    @Column(name = "duracion_partida", columnDefinition = "VARCHAR(255)")
     private String duracionPartida;
 
     @ManyToMany

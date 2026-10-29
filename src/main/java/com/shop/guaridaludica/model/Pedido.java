@@ -29,16 +29,16 @@ public class Pedido {
     private EstadoPedido estado = EstadoPedido.PENDIENTE_PAGO;
 
     // --- SNAPSHOT DE LA DIRECCIÓN (Inmutable para el histórico) ---
-    @Column(name = "direccion_calle")
+    @Column(name = "direccion_calle", columnDefinition = "VARCHAR(255)")
     private String direccionCalle;
 
-    @Column(name = "direccion_numero")
+    @Column(name = "direccion_numero", columnDefinition = "VARCHAR(50)")
     private String direccionNumero;
 
-    @Column(name = "direccion_ciudad")
+    @Column(name = "direccion_ciudad", columnDefinition = "VARCHAR(255)")
     private String direccionCiudad;
 
-    @Column(name = "direccion_cp")
+    @Column(name = "direccion_cp", columnDefinition = "VARCHAR(20)")
     private String direccionCP;
 
     @OneToMany(mappedBy = "pedido", cascade = CascadeType.ALL, orphanRemoval = true)

@@ -7,7 +7,7 @@ import com.shop.guaridaludica.service.EmailService;
 import com.shop.guaridaludica.model.DetallePedido;
 import com.shop.guaridaludica.model.Producto;
 
-import java.time.LocalDate;
+import java.time.LocalDateTime;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -40,17 +40,46 @@ public class PedidoAdminController {
     @GetMapping
     public String listarPedidosAdmin(@RequestParam(required = false) String query,
             @RequestParam(required = false) Pedido.EstadoPedido estado,
-            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate fechaInicio,
-            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate fechaFin,
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDateTime fechaInicio,
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDateTime fechaFin,
             @RequestParam(defaultValue = "0") int page,
             Model model) {
 
         Pageable pageable = PageRequest.of(page, adminSize);
 
-        // Llamamos al repositorio con los filtros ampliados (incluyendo fechas)
-        // Nota: Asegúrate de actualizar también tu query/método en PedidoRepository para recibir fechaInicio y fechaFin si usas una consulta personalizada.
-        Page<Pedido> pedidosPage = pedidoRepository.filtrarPedidos(estado, query, fechaInicio, fechaFin, pageable);
-        //Page<Pedido> pedidosPage = pedidoRepository.filtrarPedidos(estado, query, pageable);
+        if (query != null && query.trim().isEmpty()) {
+            query = null;
+        }
+        final String searchTerm = query;
+
+        // Construimos los filtros dinámicos de forma totalmente segura para JPA/PostgreSQL
+        org.springframework.data.jpa.domain.Specification<Pedido> spec = (root, consulta, builder) -> {
+            var predicates = new java.util.ArrayList<jakarta.persistence.criteria.Predicate>();
+
+            if (estado != null) {
+                predicates.add(builder.equal(root.get("estado"), estado));
+            }
+            if (fechaInicio != null) {
+                predicates.add(builder.greaterThanOrEqualTo(root.get("fechaPedido"), fechaInicio));
+            }
+            if (fechaFin != null) {
+                predicates.add(builder.lessThanOrEqualTo(root.get("fechaPedido"), fechaFin));
+            }
+            if (searchTerm != null && !searchTerm.isBlank()) {
+                String pattern = "%" + searchTerm.toLowerCase() + "%";
+                var usuarioJoin = root.join("usuario");
+                
+                var idPredicate = builder.like(builder.toString(root.get("id")), pattern);
+                var emailPredicate = builder.like(builder.lower(usuarioJoin.get("email")), pattern);
+                var nombrePredicate = builder.like(builder.lower(usuarioJoin.get("nombre")), pattern);
+
+                predicates.add(builder.or(idPredicate, emailPredicate, nombrePredicate));
+            }
+
+            return builder.and(predicates.toArray(new jakarta.persistence.criteria.Predicate[0]));
+        };
+
+        Page<Pedido> pedidosPage = pedidoRepository.findAll(spec, pageable);
         
         model.addAttribute("elementos", pedidosPage);
         model.addAttribute("currentPage", pedidosPage.getNumber());

@@ -1,9 +1,23 @@
+server:
+  port: ${PORT:8080}
+  error:
+    include-stacktrace: never
+
 spring:
   datasource:
     url: ${SPRING_DATASOURCE_URL}
     username: ${SPRING_DATASOURCE_USERNAME}
     password: ${SPRING_DATASOURCE_PASSWORD}
-    driver-class-name: com.mysql.cj.jdbc.Driver
+    driver-class-name: org.postgresql.Driver
+    hikari:
+      connection-init-sql: SET timezone TO 'UTC';
+
+  thymeleaf:
+    encoding: UTF-8
+
+  server:
+    tomcat:
+      uri-encoding: UTF-8
 
   mail:
     host: smtp-relay.brevo.com
@@ -16,10 +30,20 @@ spring:
           auth: true
           starttls:
             enable: true
-contacto:
-  email: "jmmoraj@gmail.com"
 
   jpa:
     hibernate:
       ddl-auto: update
     show-sql: false
+    properties:
+      hibernate:
+        default_schema: guaridadb
+
+contacto:
+  email: "jmmoraj@gmail.com"
+
+logging:
+  level:
+    org:
+      springframework:
+        security: INFO
