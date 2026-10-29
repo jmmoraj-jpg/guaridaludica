@@ -3,6 +3,7 @@ package com.shop.guaridaludica.service;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestTemplate;
+import org.springframework.context.annotation.Profile;
 
 @Profile("prod") // <-- Solo se carga y se ejecuta cuando el perfil activo es "prod"
 @Component
