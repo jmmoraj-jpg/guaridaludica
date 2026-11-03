@@ -38,7 +38,6 @@ spring:
     properties:
       hibernate:
         default_schema: guaridadb
-        dialect: org.hibernate.dialect.PostgreSQLDialect
   sql:
     init:
       mode: never
